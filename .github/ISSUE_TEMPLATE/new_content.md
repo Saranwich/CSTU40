@@ -2,7 +2,7 @@
 name: Add New Content
 about: แพลนอัปโหลดเลกเชอร์ สรุป หรือการบ้านใหม่
 title: '[ADD] <ชื่อวิชา> - <ชื่อเนื้อหา>'
-labels: enhancement, content
+labels: enhancement
 assignees: ''
 ---
 

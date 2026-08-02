@@ -19,7 +19,14 @@ Repository สำหรับรวบรวมเนื้อหาการเ
 รายการวิชาทั้งหมดที่ถูกรวบรวมไว้ สามารถคลิกที่รหัสวิชาเพื่อเข้าไปดูเนื้อหาของวิชานั้นๆ ได้ทันที
 
 ### Core Courses (วิชาเอก)
-- [CS111](./CS111) - (ชื่อวิชา)
+- [CS111](./CS111) - Object-Oriented Concept
+- [CS213](./CS213) - Data Structures
+- [CS221](./CS221) - Introduction to Computer System and Organization
+- [CS240](./CS240) - Principles of Data Science
+- [CS261](./CS261) - Introduction to Software Engineering
+
+### Supporting Courses (วิชาพื้นฐาน / วิชาบังคับนอกภาค)
+- [ST329](./ST329) - Applied Probability and Statistical Models
 
 ## Workflow & Tracking
 
