@@ -1,0 +1,11 @@
+*.zip
+*.pdf
+local/
+*.exe
+
+# macOS
+.DS_Store
+
+# compiled lab binaries
+CS213/Labs/*/test
+CS213/Labs/*/robot_main
