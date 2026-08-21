@@ -9,3 +9,7 @@ local/
 # compiled lab binaries
 CS213/Labs/*/test
 CS213/Labs/*/robot_main
+
+venv
+.venv/*
+.env
