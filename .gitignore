@@ -13,3 +13,6 @@ CS213/Labs/*/robot_main
 venv
 .venv/*
 .env
+
+# ตารางเรียนส่วนตัว
+schedule.html
