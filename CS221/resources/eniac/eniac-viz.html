@@ -1,0 +1,1384 @@
+<title>ENIAC ทำงานยังไง</title>
+
+<style>
+  :root {
+    --sans: "Noto Sans Thai", "IBM Plex Sans Thai", "Sarabun", "Thonburi", -apple-system, system-ui, "Segoe UI", sans-serif;
+    --mono: ui-monospace, "SF Mono", "Menlo", "Consolas", "Liberation Mono", monospace;
+
+    --bg: #EAE6DB;
+    --surface: #F5F1E7;
+    --well: #DFD9C9;
+    --line: #C6BEAB;
+    --line-soft: #D8D1C0;
+    --ink: #1F2427;
+    --ink-2: #565D62;
+    --ink-3: #878D91;
+    --data: #A9660A;
+    --ctrl: #0E6E85;
+    --lamp: #C93A15;
+    --lamp-off: #CAC1AC;
+    --lamp-glow: rgba(201, 58, 21, 0.30);
+    --shadow: 0 1px 0 rgba(0,0,0,.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171B1C;
+      --surface: #23282A;
+      --well: #14181A;
+      --line: #39403F;
+      --line-soft: #2C3234;
+      --ink: #E9E5DA;
+      --ink-2: #A0A7A5;
+      --ink-3: #6B7372;
+      --data: #E8A33D;
+      --ctrl: #52C4DC;
+      --lamp: #FF5F2E;
+      --lamp-off: #382F2C;
+      --lamp-glow: rgba(255, 95, 46, 0.45);
+      --shadow: 0 1px 0 rgba(255,255,255,.03);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #171B1C;
+    --surface: #23282A;
+    --well: #14181A;
+    --line: #39403F;
+    --line-soft: #2C3234;
+    --ink: #E9E5DA;
+    --ink-2: #A0A7A5;
+    --ink-3: #6B7372;
+    --data: #E8A33D;
+    --ctrl: #52C4DC;
+    --lamp: #FF5F2E;
+    --lamp-off: #382F2C;
+    --lamp-glow: rgba(255, 95, 46, 0.45);
+    --shadow: 0 1px 0 rgba(255,255,255,.03);
+  }
+
+  :root[data-theme="light"] {
+    --bg: #EAE6DB;
+    --surface: #F5F1E7;
+    --well: #DFD9C9;
+    --line: #C6BEAB;
+    --line-soft: #D8D1C0;
+    --ink: #1F2427;
+    --ink-2: #565D62;
+    --ink-3: #878D91;
+    --data: #A9660A;
+    --ctrl: #0E6E85;
+    --lamp: #C93A15;
+    --lamp-off: #CAC1AC;
+    --lamp-glow: rgba(201, 58, 21, 0.30);
+    --shadow: 0 1px 0 rgba(0,0,0,.05);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 22px 96px;
+  }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    padding: 64px 0 40px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .eyebrow .rule {
+    flex: 1;
+    min-width: 24px;
+    height: 1px;
+    background: var(--line);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(30px, 5.4vw, 50px);
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    margin: 0;
+    max-width: 60ch;
+    color: var(--ink-2);
+    font-size: 17px;
+  }
+
+  .legend {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+
+  .swatch { width: 26px; height: 3px; border-radius: 2px; }
+  .swatch.data { background: var(--data); }
+  .swatch.ctrl { background: var(--ctrl); }
+  .swatch.lamp { background: var(--lamp); box-shadow: 0 0 10px var(--lamp-glow); }
+
+  /* ---------- lamp strip ---------- */
+
+  .lampstrip { display: flex; gap: 7px; align-items: center; }
+  .lampstrip i {
+    display: block; width: 9px; height: 9px; border-radius: 50%;
+    background: var(--lamp-off);
+    transition: background .12s linear, box-shadow .12s linear;
+  }
+  .lampstrip i.on {
+    background: var(--lamp);
+    box-shadow: 0 0 9px var(--lamp-glow);
+  }
+
+  /* ---------- modules ---------- */
+
+  .module {
+    margin-top: 68px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .fignum {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--data);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .fignum .rule { flex: 1; height: 1px; background: var(--line-soft); }
+
+  h2 {
+    margin: 0;
+    font-size: clamp(21px, 3vw, 27px);
+    line-height: 1.4;
+    font-weight: 700;
+    text-wrap: balance;
+  }
+
+  .lede { margin: 0; max-width: 65ch; color: var(--ink-2); }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    flex-wrap: wrap;
+  }
+
+  .stage {
+    background: var(--well);
+    padding: 26px 16px;
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+  }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .caption {
+    margin: 0;
+    max-width: 68ch;
+    font-size: 14.5px;
+    color: var(--ink-3);
+    line-height: 1.7;
+  }
+  .caption strong { color: var(--ink-2); font-weight: 600; }
+
+  /* ---------- controls ---------- */
+
+  button {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 9px 15px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s;
+  }
+  button:hover { border-color: var(--data); color: var(--data); }
+  button:active { transform: translateY(1px); }
+  button:focus-visible { outline: 2px solid var(--ctrl); outline-offset: 2px; }
+  button[aria-pressed="true"] {
+    background: var(--data); border-color: var(--data);
+    color: var(--surface);
+  }
+  button:disabled { opacity: .38; cursor: default; }
+  button:disabled:hover { border-color: var(--line); color: var(--ink); }
+
+  .btn-thai { font-family: var(--sans); text-transform: none; letter-spacing: 0; font-size: 13.5px; }
+
+  .ctl-group {
+    display: flex; align-items: center; gap: 9px;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--ink-3);
+  }
+
+  .spacer { flex: 1; min-width: 4px; }
+
+  input[type="range"] { accent-color: var(--data); width: 140px; }
+  input[type="range"]:focus-visible { outline: 2px solid var(--ctrl); outline-offset: 3px; }
+
+  .readout {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--ink);
+    letter-spacing: .08em;
+  }
+
+  /* ---------- decade rings ---------- */
+
+  .acc {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .decade { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+
+  .decade-cap {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+
+  .carrywire {
+    align-self: center;
+    width: 22px; height: 2px;
+    background: var(--line);
+    position: relative; top: 46px;
+    transition: background .1s linear, box-shadow .1s linear;
+  }
+  .carrywire.fire { background: var(--lamp); box-shadow: 0 0 8px var(--lamp-glow); }
+
+  .digit-big {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 26px;
+    color: var(--lamp);
+    line-height: 1;
+  }
+
+  .acc-block {
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--surface);
+    min-width: 0;
+  }
+
+  .acc-name {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--ink-2);
+  }
+
+  .acc-value {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 34px; line-height: 1; color: var(--lamp);
+    text-shadow: 0 0 16px var(--lamp-glow);
+  }
+
+  /* ---------- transmit stage ---------- */
+
+  .xmit-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+    max-width: 760px;
+  }
+
+  .timing {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 0 16px 4px;
+  }
+  .timing-label {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .slots { display: flex; gap: 4px; }
+  .slots i {
+    display: block; flex: 1; height: 6px; border-radius: 1px;
+    background: var(--lamp-off);
+    transition: background .08s linear;
+  }
+  .slots i.on { background: var(--ctrl); }
+
+  /* ---------- svg ---------- */
+
+  svg { display: block; max-width: 100%; height: auto; }
+
+  .unitbox { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+  .unitbox.active { stroke: var(--ctrl); stroke-width: 2; }
+  .unitlabel {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .13em;
+    fill: var(--ink-2); text-transform: uppercase;
+  }
+  .unitsub { font-family: var(--sans); font-size: 12px; fill: var(--ink-3); }
+  .unitval {
+    font-family: var(--mono); font-size: 15px; fill: var(--lamp);
+    font-variant-numeric: tabular-nums;
+  }
+  .cable-data { stroke: var(--data); stroke-width: 2; fill: none; opacity: .42; }
+  .cable-ctrl { stroke: var(--ctrl); stroke-width: 2; fill: none; opacity: .42; stroke-dasharray: 6 4; }
+  .cable-hidden { opacity: .07; }
+
+  /* ---------- ballistics ---------- */
+
+  .ball-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 232px;
+    gap: 18px;
+    width: 100%;
+    align-items: start;
+  }
+
+  .ftable {
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .ftable-head {
+    padding: 8px 11px;
+    border-bottom: 1px solid var(--line-soft);
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .ftable table { border-collapse: collapse; width: 100%; }
+  .ftable td {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 11.5px; padding: 4px 11px; color: var(--ink-2);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .ftable tr:last-child td { border-bottom: 0; }
+  .ftable tr.hot td { background: var(--lamp); color: var(--surface); }
+
+  .regs { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+  .reg {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 10px; padding: 6px 11px;
+    border: 1px solid var(--line); border-radius: 2px;
+    background: var(--surface);
+    transition: border-color .2s;
+  }
+  .reg.touched { border-color: var(--lamp); }
+  .reg-name {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .reg-val {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 13px; color: var(--ink);
+  }
+
+  canvas { display: block; width: 100%; height: auto; border-radius: 2px; }
+
+  /* ---------- closing ---------- */
+
+  .closing {
+    margin-top: 76px;
+    padding-top: 30px;
+    border-top: 1px solid var(--line);
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .closing p { margin: 0; max-width: 65ch; color: var(--ink-2); }
+  .closing .q {
+    font-size: 19px; color: var(--ink); font-weight: 600;
+    max-width: 60ch; text-wrap: balance; line-height: 1.6;
+  }
+  .sources {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em;
+    color: var(--ink-3); line-height: 1.9; margin: 0;
+  }
+
+  @media (max-width: 760px) {
+    .ball-layout { grid-template-columns: minmax(0, 1fr); }
+    .xmit-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">
+      <span>Moore School &middot; 1945</span>
+      <span class="rule"></span>
+      <span class="lampstrip" id="idleLamps" aria-hidden="true"></span>
+    </div>
+
+    <h1>ENIAC ทำงานยังไง ตั้งแต่หลอดสุญญากาศจนถึงโปรแกรม</h1>
+
+    <p class="standfirst">
+      เครื่องที่ไม่มีชิ้นส่วนใดขยับ ไม่ใช้เลขฐานสอง และไม่มีคำสั่งเก็บอยู่ข้างในเลย
+      สี่ภาพข้างล่างนี้กดเล่นได้ ลองไล่ดูทีละภาพว่ามันนับเลข บวกเลข และ &ldquo;รู้ว่าต้องทำอะไรต่อ&rdquo; ได้ยังไง
+    </p>
+
+    <div class="legend">
+      <span class="legend-item"><span class="swatch data"></span> Digit trunk &middot; สายข้อมูล</span>
+      <span class="legend-item"><span class="swatch ctrl"></span> Program trunk &middot; สายคำสั่ง</span>
+      <span class="legend-item"><span class="swatch lamp"></span> Neon lamp &middot; หลอดที่ติดอยู่</span>
+    </div>
+  </header>
+
+  <!-- ============ FIG 1 ============ -->
+  <section class="module">
+    <div class="fignum"><span>Fig. 1</span><span class="rule"></span><span>Decade ring counter</span></div>
+    <h2>หนึ่งหลักคือวงหลอดสิบตัว ที่ติดได้ทีละตัว</h2>
+    <p class="lede">
+      ENIAC ลอกหน้าปัดเครื่องคิดเลขมือหมุนมาตรง ๆ ล้อสิบซี่กลายเป็นหลอดสิบคู่ต่อกันเป็นวง
+      ตัวที่ติดอยู่คือค่าของหลักนั้น พัลส์ไฟฟ้าเข้ามาหนึ่งลูก ความ &ldquo;ติด&rdquo; ก็ขยับไปหนึ่งช่อง
+      <strong>ครบวงเมื่อไหร่ มันยิงพัลส์ทดไปให้วงข้าง ๆ เอง</strong>
+    </p>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span>Accumulator &mdash; 3 decades shown</span>
+        <span class="readout" id="ringReadout">VALUE 000 &middot; PULSES 0</span>
+      </div>
+      <div class="stage"><div id="ringStage" class="acc"></div></div>
+      <div class="controls">
+        <button id="ringPulse" class="btn-thai">ยิงพัลส์ 1 ลูก</button>
+        <button id="ringRun" class="btn-thai" aria-pressed="false">ยิงรัว ๆ</button>
+        <button id="ringNine" class="btn-thai">ตั้งเป็น 099</button>
+        <button id="ringReset" class="btn-thai">รีเซ็ต</button>
+        <span class="spacer"></span>
+        <span class="ctl-group">Tubes &nbsp;<span class="readout">60</span></span>
+      </div>
+    </div>
+
+    <p class="caption">
+      กดปุ่ม <strong>ตั้งเป็น 099</strong> แล้วยิงพัลส์อีกลูกเดียว จะเห็นการทดวิ่งข้ามสองหลักรวดเดียว
+      &mdash; สามหลักนี้กินหลอด 60 หลอด ถ้าเก็บเป็นฐานสองจะใช้แค่ 2 หลอดต่อหลัก
+      แต่ ENIAC ยอมจ่ายเพื่อให้คนเดินไปส่องแล้วอ่านตัวเลขออกทันที และเพื่อให้ &ldquo;การบวก&rdquo; เหลือแค่การนับ
+    </p>
+  </section>
+
+  <!-- ============ FIG 2 ============ -->
+  <section class="module">
+    <div class="fignum"><span>Fig. 2</span><span class="rule"></span><span>Pulse-train transmission</span></div>
+    <h2>ส่งเลข 7 คือยิงไฟไป 7 ลูก</h2>
+    <p class="lede">
+      สายข้อมูลใน ENIAC ไม่ได้ส่งค่าเป็นระดับแรงดัน แต่ส่งเป็น<strong>จำนวนพัลส์</strong>
+      แต่ละหลักมีสายของตัวเองเดินคู่ขนานกันไป และมีหน้าต่างเวลากว้าง 10 จังหวะให้ยิง
+      พอพัลส์ถึงปลายทาง วงนับก็ขยับตามจำนวนที่เข้ามา &mdash; ไม่มีวงจรบวกอยู่ที่ไหนเลย
+    </p>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span>Acc. 2 &rarr; Acc. 1 &middot; 200 &micro;s cycle</span>
+        <span class="readout" id="xmitReadout">IDLE</span>
+      </div>
+      <div class="stage">
+        <div style="width:100%;max-width:780px;display:flex;flex-direction:column;gap:14px;">
+          <div class="xmit-grid">
+            <div class="acc-block">
+              <span class="acc-name">Acc. 2 &mdash; source</span>
+              <div class="acc-value" id="srcVal">07</div>
+              <div class="acc" id="srcRings"></div>
+            </div>
+            <svg id="xmitWires" viewBox="0 0 300 150" role="img" aria-label="สายข้อมูลสองเส้น เส้นบนคือหลักสิบ เส้นล่างคือหลักหน่วย">
+              <text x="150" y="34" text-anchor="middle" class="unitlabel">Tens line</text>
+              <line x1="10" y1="52" x2="290" y2="52" stroke="var(--data)" stroke-width="2" opacity=".35" />
+              <text x="150" y="102" text-anchor="middle" class="unitlabel">Units line</text>
+              <line x1="10" y1="120" x2="290" y2="120" stroke="var(--data)" stroke-width="2" opacity=".35" />
+              <g id="xmitDots"></g>
+            </svg>
+            <div class="acc-block">
+              <span class="acc-name">Acc. 1 &mdash; target</span>
+              <div class="acc-value" id="dstVal">05</div>
+              <div class="acc" id="dstRings"></div>
+            </div>
+          </div>
+          <div class="timing">
+            <span class="timing-label">Pulse window &mdash; 10 slots</span>
+            <div class="slots" id="xmitSlots"></div>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <span class="ctl-group">Acc.2
+          <input type="range" id="srcRange" min="0" max="99" value="7" aria-label="ค่าใน Acc. 2">
+        </span>
+        <span class="ctl-group">Acc.1
+          <input type="range" id="dstRange" min="0" max="99" value="5" aria-label="ค่าใน Acc. 1">
+        </span>
+        <span class="spacer"></span>
+        <button id="xmitAdd" class="btn-thai">ส่งค่าปกติ &rarr; บวก</button>
+        <button id="xmitSub" class="btn-thai">ส่งค่าคู่เติมสิบ &rarr; ลบ</button>
+      </div>
+    </div>
+
+    <p class="caption">
+      กดปุ่มลบแล้วดูตัวเลขที่วิ่งบนสาย: ถ้า Acc. 2 เก็บ 07 มันจะยิง <strong>9 ลูกบนสายหลักสิบ และ 3 ลูกบนสายหลักหน่วย</strong>
+      เพราะคู่เติมสิบของ 07 คือ 93 พอบวกเข้าไปแล้วทิ้งตัวทดที่ล้นออกนอกหลักสูงสุด ผลที่ได้เท่ากับการลบพอดี
+      ENIAC จึงไม่ต้องมีวงจรลบเลย มีแค่ช่องขาออกเพิ่มอีกช่อง
+      <span style="opacity:.75">(ของจริงทดตัวเลขในเฟสแยกท้ายรอบ ภาพนี้ทดทันทีเพื่อให้ดูง่าย)</span>
+    </p>
+  </section>
+
+  <!-- ============ FIG 3 ============ -->
+  <section class="module">
+    <div class="fignum"><span>Fig. 3</span><span class="rule"></span><span>Two kinds of cable</span></div>
+    <h2>โปรแกรมคือเส้นทางที่พัลส์หนึ่งลูกวิ่งผ่านสายไฟ</h2>
+    <p class="lede">
+      สายที่เสียบบนแผงมีสองพันธุ์ที่ทำคนละหน้าที่โดยสิ้นเชิง
+      <strong>สายสีส้มลำเลียงตัวเลข</strong> ส่วน<strong>สายสีฟ้าส่งพัลส์เดียวโดด ๆ ที่แปลว่า &ldquo;ถึงตาแกแล้ว&rdquo;</strong>
+      ลำดับการทำงานจึงไม่ได้เรียงจากบนลงล่างเหมือนโค้ด แต่เป็นแผนผังที่ต่อกันเป็นทอด ๆ
+      อยากวนลูปก็เอาปลายสายวนกลับมาเข้าต้นทาง
+    </p>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span>Trajectory step &mdash; one loop iteration</span>
+        <span class="readout" id="wireReadout">READY</span>
+      </div>
+      <div class="stage">
+        <svg id="wireSvg" viewBox="0 0 820 380" role="img"
+             aria-label="ผังการเดินสายของหนึ่งรอบลูป มีสี่หน่วยต่อกันด้วยสายข้อมูลและสายคำสั่ง">
+          <defs>
+            <marker id="arrowCtrl" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" fill="var(--ctrl)" opacity=".55" />
+            </marker>
+          </defs>
+          <g id="wireCables"></g>
+          <g id="wireUnits"></g>
+          <g id="wirePulses"></g>
+        </svg>
+      </div>
+      <div class="controls">
+        <button id="wireStep" class="btn-thai">เดินทีละก้าว</button>
+        <button id="wireRun" class="btn-thai" aria-pressed="false">รันลูป</button>
+        <button id="wireReset" class="btn-thai">รีเซ็ต</button>
+        <span class="spacer"></span>
+        <button id="wireShowData" aria-pressed="true">Data</button>
+        <button id="wireShowCtrl" aria-pressed="true">Control</button>
+      </div>
+    </div>
+
+    <p class="caption">
+      ลองปิดปุ่ม <strong>Data</strong> ทิ้ง แล้วรันดูอีกที เหลือแต่สายฟ้าอย่างเดียว
+      นั่นคือ &ldquo;โปรแกรม&rdquo; ทั้งหมดของ ENIAC &mdash; ไม่มีที่ไหนในเครื่องเก็บรายการคำสั่งไว้เลย
+      คำสั่งคือรูปร่างของสายที่คุณเสียบไว้ กล่อง <strong>Master programmer</strong> ทำหน้าที่นับว่าพัลส์ผ่านมากี่รอบแล้ว
+      ครบตามที่ตั้งไว้ก็เปลี่ยนไปปล่อยพัลส์ออกอีกช่องแทน นั่นคือทั้งหมดที่ ENIAC มีสำหรับคำว่า &ldquo;วนลูป&rdquo; และ &ldquo;เงื่อนไข&rdquo;
+    </p>
+  </section>
+
+  <!-- ============ FIG 4 ============ -->
+  <section class="module">
+    <div class="fignum"><span>Fig. 4</span><span class="rule"></span><span>What it actually computed</span></div>
+    <h2>เดินตามกระสุนทีละก้าว เพราะแก้สมการตรง ๆ ไม่ได้</h2>
+    <p class="lede">
+      แรงต้านอากาศขึ้นกับความเร็ว และความเร็วก็เปลี่ยนเพราะแรงต้าน สมการนี้จึงไม่มีสูตรสำเร็จ
+      วิธีเดียวคือเลิกหาสูตร แล้วถามว่า &ldquo;อีกเสี้ยววินาทีถัดไปกระสุนจะอยู่ตรงไหน&rdquo; ซ้ำไปเรื่อย ๆ จนมันตกถึงพื้น
+      <strong>ค่าแรงต้านคำนวณเองไม่ได้ ต้องเปิดตารางที่คนหมุนสวิตช์ใส่ไว้ล่วงหน้า</strong>
+    </p>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span>Trajectory integration</span>
+        <span class="readout" id="ballReadout">STEP 0</span>
+      </div>
+      <div class="stage">
+        <div class="ball-layout">
+          <div>
+            <canvas id="ballCanvas" width="1100" height="480"></canvas>
+          </div>
+          <div>
+            <div class="ftable">
+              <div class="ftable-head">Function table &mdash; drag</div>
+              <table id="ftable"><tbody></tbody></table>
+            </div>
+            <div class="regs" id="regs"></div>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <span class="ctl-group">Angle
+          <input type="range" id="ballAngle" min="15" max="75" value="42" aria-label="มุมยิง">
+          <span class="readout" id="ballAngleOut">42&deg;</span>
+        </span>
+        <span class="spacer"></span>
+        <button id="ballStep" class="btn-thai">ก้าวทีละสเต็ป</button>
+        <button id="ballRun" class="btn-thai" aria-pressed="false">รันจนตก</button>
+        <button id="ballReset" class="btn-thai">รีเซ็ต</button>
+      </div>
+    </div>
+
+    <p class="caption">
+      สังเกตว่ารอยกระสุนเป็น<strong>จุด ๆ ไม่ใช่เส้นโค้งเรียบ</strong> เพราะเครื่องไม่เคยรู้จักเส้นโค้ง มันรู้แค่ตำแหน่งถัดไป
+      และสังเกตช่องขวาให้ดี &mdash; ตลอดทั้งการคำนวณ เครื่องเก็บตัวเลขไว้แค่ห้าตัว
+      ไม่ต้องจำว่ากระสุนเคยผ่านตรงไหนมาบ้าง <strong>นี่คือเหตุผลที่ accumulator แค่ 20 ตัวก็เหลือเฟือ</strong>
+      ลูปสั้น ๆ ชุดนี้ต้องวนหลายพันรอบต่อหนึ่งวิถี แล้วยิงอีกราวสามพันวิถีจึงจะได้ตารางหนึ่งเล่ม
+      เดินสายทีเดียวแล้วรันยาว ๆ &mdash; นั่นคือสิ่งเดียวที่ทำให้การเสียบสายหลายวันยังพอทนได้
+    </p>
+  </section>
+
+  <div class="closing">
+    <p class="q">
+      ในเมื่อ accumulator เก็บตัวเลขได้อยู่แล้ว ทำไมเราไม่เก็บ <em>ลำดับคำสั่ง</em> ลงไปในนั้นแบบเดียวกัน
+      แล้วเปลี่ยนโปรแกรมด้วยการเปลี่ยนตัวเลข แทนที่จะเปลี่ยนสาย
+    </p>
+    <p>คำถามนี้คือทั้งหมดของหัวข้อถัดไป &mdash; stored-program concept</p>
+    <p class="sources">
+      ENIAC Technical Manual, Ballistic Research Laboratory &middot;
+      Burks &amp; Burks, The First Electronic Computer &middot;
+      Haigh, Priestley &amp; Rope, ENIAC in Action
+    </p>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function el(tag, cls) { var n = document.createElement(tag); if (cls) n.className = cls; return n; }
+  function svgEl(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
+  function pad(n, w) { var s = String(n); while (s.length < w) s = "0" + s; return s; }
+
+  /* ================= shared: decade ring widget ================= */
+
+  var RING_R = 30, RING_BOX = 84, LAMP_R = 5.4;
+
+  function makeRing(label) {
+    var wrap = el("div", "decade");
+    var svg = svgEl("svg");
+    svg.setAttribute("viewBox", "0 0 " + RING_BOX + " " + RING_BOX);
+    svg.setAttribute("width", RING_BOX);
+    svg.setAttribute("height", RING_BOX);
+    svg.setAttribute("aria-hidden", "true");
+
+    var c = RING_BOX / 2;
+    var ring = svgEl("circle");
+    ring.setAttribute("cx", c); ring.setAttribute("cy", c); ring.setAttribute("r", RING_R);
+    ring.setAttribute("fill", "none");
+    ring.setAttribute("stroke", "var(--line)");
+    ring.setAttribute("stroke-width", "1");
+    svg.appendChild(ring);
+
+    var lamps = [];
+    for (var i = 0; i < 10; i++) {
+      var a = (i * 36 - 90) * Math.PI / 180;
+      var x = c + RING_R * Math.cos(a), y = c + RING_R * Math.sin(a);
+      var lamp = svgEl("circle");
+      lamp.setAttribute("cx", x); lamp.setAttribute("cy", y); lamp.setAttribute("r", LAMP_R);
+      lamp.setAttribute("fill", "var(--lamp-off)");
+      svg.appendChild(lamp);
+      lamps.push(lamp);
+    }
+
+    var txt = svgEl("text");
+    txt.setAttribute("x", c); txt.setAttribute("y", c + 8);
+    txt.setAttribute("text-anchor", "middle");
+    txt.setAttribute("class", "unitval");
+    txt.setAttribute("font-size", "22");
+    txt.textContent = "0";
+    svg.appendChild(txt);
+
+    wrap.appendChild(svg);
+    if (label) { var cap = el("span", "decade-cap"); cap.textContent = label; wrap.appendChild(cap); }
+
+    return {
+      node: wrap,
+      set: function (v) {
+        for (var i = 0; i < 10; i++) {
+          var on = (i === v);
+          lamps[i].setAttribute("fill", on ? "var(--lamp)" : "var(--lamp-off)");
+          lamps[i].setAttribute("filter", "");
+          lamps[i].style.filter = on ? "drop-shadow(0 0 5px var(--lamp-glow))" : "none";
+        }
+        txt.textContent = String(v);
+      }
+    };
+  }
+
+  function makeAccumulator(host, labels) {
+    host.innerHTML = "";
+    var rings = [], wires = [];
+    for (var i = 0; i < labels.length; i++) {
+      if (i > 0) { var w = el("div", "carrywire"); host.appendChild(w); wires.unshift(w); }
+      var r = makeRing(labels[i]);
+      host.appendChild(r.node);
+      rings.push(r);
+    }
+    /* rings[0] = most significant; store least-significant-first for math */
+    rings.reverse();
+    return { rings: rings, wires: wires };
+  }
+
+  function renderDigits(acc, value) {
+    var v = value;
+    for (var i = 0; i < acc.rings.length; i++) {
+      acc.rings[i].set(v % 10);
+      v = Math.floor(v / 10);
+    }
+  }
+
+  function flashCarry(acc, idx) {
+    var w = acc.wires[idx];
+    if (!w) return;
+    w.classList.add("fire");
+    setTimeout(function () { w.classList.remove("fire"); }, reduced ? 1 : 200);
+  }
+
+  /* ================= masthead idle lamps ================= */
+
+  (function () {
+    var host = document.getElementById("idleLamps");
+    var lamps = [];
+    for (var i = 0; i < 10; i++) { var n = el("i"); host.appendChild(n); lamps.push(n); }
+    var p = 0;
+    lamps[0].classList.add("on");
+    if (reduced) return;
+    setInterval(function () {
+      lamps[p].classList.remove("on");
+      p = (p + 1) % 10;
+      lamps[p].classList.add("on");
+    }, 420);
+  })();
+
+  /* ================= FIG 1 : ring counter ================= */
+
+  (function () {
+    var stage = document.getElementById("ringStage");
+    var out = document.getElementById("ringReadout");
+    var acc = makeAccumulator(stage, ["hundreds", "tens", "units"]);
+    var value = 0, pulses = 0, timer = null;
+
+    function draw() {
+      renderDigits(acc, value);
+      out.textContent = "VALUE " + pad(value, 3) + " · PULSES " + pulses;
+    }
+
+    function pulse() {
+      pulses++;
+      var u = value % 10;
+      if (u === 9) {
+        flashCarry(acc, 0);
+        var t = Math.floor(value / 10) % 10;
+        if (t === 9) flashCarry(acc, 1);
+      }
+      value = (value + 1) % 1000;
+      draw();
+    }
+
+    document.getElementById("ringPulse").onclick = pulse;
+    document.getElementById("ringNine").onclick = function () { value = 99; draw(); };
+    document.getElementById("ringReset").onclick = function () { value = 0; pulses = 0; draw(); };
+
+    var runBtn = document.getElementById("ringRun");
+    runBtn.onclick = function () {
+      if (timer) {
+        clearInterval(timer); timer = null;
+        runBtn.setAttribute("aria-pressed", "false");
+      } else {
+        timer = setInterval(pulse, reduced ? 400 : 170);
+        runBtn.setAttribute("aria-pressed", "true");
+      }
+    };
+
+    draw();
+  })();
+
+  /* ================= FIG 2 : pulse-train transmission ================= */
+
+  (function () {
+    var srcAcc = makeAccumulator(document.getElementById("srcRings"), ["tens", "units"]);
+    var dstAcc = makeAccumulator(document.getElementById("dstRings"), ["tens", "units"]);
+    var srcValEl = document.getElementById("srcVal");
+    var dstValEl = document.getElementById("dstVal");
+    var out = document.getElementById("xmitReadout");
+    var dotsG = document.getElementById("xmitDots");
+    var slotsHost = document.getElementById("xmitSlots");
+    var srcRange = document.getElementById("srcRange");
+    var dstRange = document.getElementById("dstRange");
+    var addBtn = document.getElementById("xmitAdd");
+    var subBtn = document.getElementById("xmitSub");
+
+    var slots = [];
+    for (var i = 0; i < 10; i++) { var s = el("i"); slotsHost.appendChild(s); slots.push(s); }
+
+    var src = 7, dst = 5, busy = false;
+    var LANE_Y = { tens: 52, units: 120 };
+    var X0 = 10, X1 = 290;
+
+    function draw() {
+      renderDigits(srcAcc, src); renderDigits(dstAcc, dst);
+      srcValEl.textContent = pad(src, 2);
+      dstValEl.textContent = pad(dst, 2);
+    }
+
+    function bump(lane) {
+      var was = dst;
+      if (lane === "units") dst = dst + 1;
+      else dst = dst + 10;
+      if (lane === "units" && was % 10 === 9) flashCarry(dstAcc, 0);
+      dst = ((dst % 100) + 100) % 100;
+      draw();
+    }
+
+    function transmit(mode) {
+      if (busy) return;
+      busy = true;
+      addBtn.disabled = true; subBtn.disabled = true;
+      srcRange.disabled = true; dstRange.disabled = true;
+
+      var sent = mode === "sub" ? (100 - src) % 100 : src;
+      var tensN = Math.floor(sent / 10), unitsN = sent % 10;
+
+      out.textContent = (mode === "sub" ? "COMPLEMENT " : "TRANSMIT ") +
+        pad(sent, 2) + " · T:" + tensN + " U:" + unitsN;
+
+      var dots = [];
+      var slot = 0;
+      var SLOT_MS = reduced ? 24 : 130;
+      var TRAVEL = reduced ? 40 : 620;
+
+      function emit() {
+        for (var i = 0; i < 10; i++) slots[i].classList.toggle("on", i === slot);
+        if (slot < tensN) dots.push(mkDot("tens"));
+        if (slot < unitsN) dots.push(mkDot("units"));
+        slot++;
+        if (slot < 10) setTimeout(emit, SLOT_MS);
+        else setTimeout(function () {
+          for (var i = 0; i < 10; i++) slots[i].classList.remove("on");
+        }, SLOT_MS);
+      }
+
+      function mkDot(lane) {
+        var c = svgEl("circle");
+        c.setAttribute("cy", LANE_Y[lane]);
+        c.setAttribute("cx", X0);
+        c.setAttribute("r", 4);
+        c.setAttribute("fill", "var(--data)");
+        dotsG.appendChild(c);
+        var start = performance.now();
+        var d = { node: c, lane: lane, start: start, done: false };
+        return d;
+      }
+
+      function frame(now) {
+        var alive = 0;
+        for (var i = 0; i < dots.length; i++) {
+          var d = dots[i];
+          if (d.done) continue;
+          var t = (now - d.start) / TRAVEL;
+          if (t >= 1) {
+            d.done = true;
+            d.node.remove();
+            bump(d.lane);
+          } else {
+            d.node.setAttribute("cx", X0 + (X1 - X0) * t);
+            alive++;
+          }
+        }
+        if (alive > 0 || slot < 10) requestAnimationFrame(frame);
+        else finish();
+      }
+
+      function finish() {
+        busy = false;
+        addBtn.disabled = false; subBtn.disabled = false;
+        srcRange.disabled = false; dstRange.disabled = false;
+        dstRange.value = dst;
+        out.textContent = "RESULT " + pad(dst, 2);
+      }
+
+      emit();
+      requestAnimationFrame(frame);
+    }
+
+    srcRange.oninput = function () { src = +srcRange.value; draw(); };
+    dstRange.oninput = function () { dst = +dstRange.value; draw(); };
+    addBtn.onclick = function () { transmit("add"); };
+    subBtn.onclick = function () { transmit("sub"); };
+
+    draw();
+  })();
+
+  /* ================= FIG 3 : two kinds of cable ================= */
+
+  (function () {
+    var svg = document.getElementById("wireSvg");
+    var gCables = document.getElementById("wireCables");
+    var gUnits = document.getElementById("wireUnits");
+    var gPulses = document.getElementById("wirePulses");
+    var out = document.getElementById("wireReadout");
+
+    var UNITS = [
+      { id: "init", x: 40,  y: 168, w: 118, h: 74, tag: "Initiating", sub: "จุดเริ่ม" },
+      { id: "acc4", x: 214, y: 44,  w: 150, h: 84, tag: "Acc. 4", sub: "ความเร็ว", val: "0842" },
+      { id: "ft",   x: 214, y: 250, w: 150, h: 84, tag: "Function tbl.", sub: "แรงต้าน", val: "0117" },
+      { id: "acc7", x: 432, y: 148, w: 150, h: 84, tag: "Acc. 7", sub: "ตำแหน่ง", val: "1560" },
+      { id: "mp",   x: 640, y: 148, w: 146, h: 84, tag: "Master prog.", sub: "ตัวนับรอบ", val: "0 / 6" }
+    ];
+
+    var byId = {};
+    UNITS.forEach(function (u) { byId[u.id] = u; });
+
+    function cx(u) { return u.x + u.w / 2; }
+    function cy(u) { return u.y + u.h / 2; }
+
+    /* cable definitions: kind, from, to, sag */
+    var CABLES = [
+      { kind: "ctrl", a: "init", b: "acc4", sag: -34 },
+      { kind: "data", a: "acc4", b: "ft",   sag: -46 },
+      { kind: "ctrl", a: "acc4", b: "ft",   sag: 46 },
+      { kind: "data", a: "ft",   b: "acc7", sag: 40 },
+      { kind: "ctrl", a: "ft",   b: "acc7", sag: 18 },
+      { kind: "ctrl", a: "acc7", b: "mp",   sag: 26 },
+      { kind: "ctrl", a: "mp",   b: "acc4", sag: -108, loop: true }
+    ];
+
+    var paths = [];
+    CABLES.forEach(function (c) {
+      var A = byId[c.a], B = byId[c.b];
+      var x1 = cx(A), y1 = cy(A), x2 = cx(B), y2 = cy(B);
+      var mx = (x1 + x2) / 2, my = (y1 + y2) / 2 + c.sag;
+      var p = svgEl("path");
+      p.setAttribute("d", "M" + x1 + "," + y1 + " Q" + mx + "," + my + " " + x2 + "," + y2);
+      p.setAttribute("class", c.kind === "data" ? "cable-data" : "cable-ctrl");
+      if (c.kind === "ctrl") p.setAttribute("marker-end", "url(#arrowCtrl)");
+      gCables.appendChild(p);
+      paths.push({ node: p, kind: c.kind, def: c });
+    });
+
+    /* loop label */
+    var loopTxt = svgEl("text");
+    loopTxt.setAttribute("x", 430); loopTxt.setAttribute("y", 26);
+    loopTxt.setAttribute("text-anchor", "middle");
+    loopTxt.setAttribute("class", "unitsub");
+    loopTxt.textContent = "สายวนกลับ = ลูป";
+    gCables.appendChild(loopTxt);
+
+    var boxes = {};
+    UNITS.forEach(function (u) {
+      var g = svgEl("g");
+      var r = svgEl("rect");
+      r.setAttribute("x", u.x); r.setAttribute("y", u.y);
+      r.setAttribute("width", u.w); r.setAttribute("height", u.h);
+      r.setAttribute("rx", 2);
+      r.setAttribute("class", "unitbox");
+      g.appendChild(r);
+
+      var t1 = svgEl("text");
+      t1.setAttribute("x", cx(u)); t1.setAttribute("y", u.y + 24);
+      t1.setAttribute("text-anchor", "middle"); t1.setAttribute("class", "unitlabel");
+      t1.textContent = u.tag.toUpperCase();
+      g.appendChild(t1);
+
+      var t2 = svgEl("text");
+      t2.setAttribute("x", cx(u)); t2.setAttribute("y", u.y + 44);
+      t2.setAttribute("text-anchor", "middle"); t2.setAttribute("class", "unitsub");
+      t2.textContent = u.sub;
+      g.appendChild(t2);
+
+      var t3 = null;
+      if (u.val) {
+        t3 = svgEl("text");
+        t3.setAttribute("x", cx(u)); t3.setAttribute("y", u.y + 68);
+        t3.setAttribute("text-anchor", "middle"); t3.setAttribute("class", "unitval");
+        t3.textContent = u.val;
+        g.appendChild(t3);
+      }
+
+      gUnits.appendChild(g);
+      boxes[u.id] = { rect: r, val: t3 };
+    });
+
+    /* animation sequence: each entry is one cable traversal */
+    var SEQ = [
+      { i: 0, msg: "PROGRAM PULSE → ACC. 4" },
+      { i: 1, msg: "ACC. 4 TRANSMITS VELOCITY" },
+      { i: 2, msg: "PROGRAM PULSE → FUNCTION TABLE" },
+      { i: 3, msg: "TABLE TRANSMITS DRAG" },
+      { i: 4, msg: "PROGRAM PULSE → ACC. 7" },
+      { i: 5, msg: "PROGRAM PULSE → MASTER PROG." },
+      { i: 6, msg: "COUNT + 1 → BACK TO ACC. 4" }
+    ];
+
+    var step = 0, laps = 0, running = false, animating = false;
+
+    function setActive(id) {
+      Object.keys(boxes).forEach(function (k) {
+        boxes[k].rect.classList.toggle("active", k === id);
+      });
+    }
+
+    function travel(pathIdx, cb) {
+      var p = paths[pathIdx];
+      var len = p.node.getTotalLength();
+      var dot = svgEl("circle");
+      dot.setAttribute("r", p.kind === "data" ? 5 : 6);
+      dot.setAttribute("fill", p.kind === "data" ? "var(--data)" : "var(--ctrl)");
+      dot.style.filter = "drop-shadow(0 0 6px " + (p.kind === "data" ? "var(--data)" : "var(--ctrl)") + ")";
+      gPulses.appendChild(dot);
+
+      var DUR = reduced ? 60 : (p.kind === "data" ? 620 : 480);
+      var start = performance.now();
+
+      function frame(now) {
+        var t = Math.min(1, (now - start) / DUR);
+        var pt = p.node.getPointAtLength(len * t);
+        dot.setAttribute("cx", pt.x); dot.setAttribute("cy", pt.y);
+        if (t < 1) requestAnimationFrame(frame);
+        else { dot.remove(); cb(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function doStep() {
+      if (animating) return;
+      animating = true;
+      var s = SEQ[step];
+      var c = paths[s.i].def;
+      out.textContent = s.msg;
+      setActive(c.a);
+
+      travel(s.i, function () {
+        setActive(c.b);
+        if (c.b === "mp") {
+          laps = (laps + 1) % 7;
+          boxes.mp.val.textContent = laps + " / 6";
+        }
+        if (c.b === "acc7") {
+          var v = 1560 + laps * 84;
+          boxes.acc7.val.textContent = pad(v, 4);
+        }
+        if (c.b === "acc4" && s.i === 6) {
+          var v2 = Math.max(0, 842 - laps * 37);
+          boxes.acc4.val.textContent = pad(v2, 4);
+          boxes.ft.val.textContent = pad(117 - laps * 6, 4);
+        }
+        step = (step + 1) % SEQ.length;
+        animating = false;
+        if (step === 0 && laps === 0) {
+          out.textContent = "COUNT REACHED — EXIT LOOP";
+          setActive(null);
+          if (running) toggleRun();
+          return;
+        }
+        if (running) doStep();
+      });
+    }
+
+    var runBtn = document.getElementById("wireRun");
+    function toggleRun() {
+      running = !running;
+      runBtn.setAttribute("aria-pressed", running ? "true" : "false");
+      if (running) doStep();
+    }
+
+    document.getElementById("wireStep").onclick = doStep;
+    runBtn.onclick = toggleRun;
+    document.getElementById("wireReset").onclick = function () {
+      step = 0; laps = 0;
+      if (running) toggleRun();
+      setActive(null);
+      boxes.mp.val.textContent = "0 / 6";
+      boxes.acc4.val.textContent = "0842";
+      boxes.acc7.val.textContent = "1560";
+      boxes.ft.val.textContent = "0117";
+      out.textContent = "READY";
+    };
+
+    function applyVisibility() {
+      var showData = document.getElementById("wireShowData").getAttribute("aria-pressed") === "true";
+      var showCtrl = document.getElementById("wireShowCtrl").getAttribute("aria-pressed") === "true";
+      paths.forEach(function (p) {
+        var vis = p.kind === "data" ? showData : showCtrl;
+        p.node.classList.toggle("cable-hidden", !vis);
+      });
+    }
+    ["wireShowData", "wireShowCtrl"].forEach(function (id) {
+      var b = document.getElementById(id);
+      b.onclick = function () {
+        b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") === "true" ? "false" : "true");
+        applyVisibility();
+      };
+    });
+  })();
+
+  /* ================= FIG 4 : trajectory ================= */
+
+  (function () {
+    var cv = document.getElementById("ballCanvas");
+    var ctx = cv.getContext("2d");
+    var out = document.getElementById("ballReadout");
+    var ftBody = document.querySelector("#ftable tbody");
+    var regsHost = document.getElementById("regs");
+    var angleIn = document.getElementById("ballAngle");
+    var angleOut = document.getElementById("ballAngleOut");
+
+    /* hand-set drag table: velocity band -> coefficient */
+    var TABLE = [
+      { v: 700, k: 0.0016 },
+      { v: 600, k: 0.0020 },
+      { v: 500, k: 0.0024 },
+      { v: 400, k: 0.0021 },
+      { v: 300, k: 0.0015 },
+      { v: 200, k: 0.0011 },
+      { v: 100, k: 0.0008 },
+      { v: 0,   k: 0.0006 }
+    ];
+
+    var rows = [];
+    TABLE.forEach(function (r) {
+      var tr = el("tr");
+      var a = el("td"); a.textContent = pad(r.v, 3) + " m/s";
+      var b = el("td"); b.textContent = r.k.toFixed(4);
+      b.style.textAlign = "right";
+      tr.appendChild(a); tr.appendChild(b);
+      ftBody.appendChild(tr);
+      rows.push(tr);
+    });
+
+    var REGS = [
+      { id: "x",  name: "Acc. 6 · X" },
+      { id: "y",  name: "Acc. 7 · Y" },
+      { id: "vx", name: "Acc. 4 · VX" },
+      { id: "vy", name: "Acc. 5 · VY" },
+      { id: "t",  name: "Acc. 9 · T" }
+    ];
+    var regNodes = {};
+    REGS.forEach(function (r) {
+      var row = el("div", "reg");
+      var n = el("span", "reg-name"); n.textContent = r.name;
+      var v = el("span", "reg-val"); v.textContent = "0";
+      row.appendChild(n); row.appendChild(v);
+      regsHost.appendChild(row);
+      regNodes[r.id] = { row: row, val: v };
+    });
+
+    var S, trail, timer = null, hotRow = -1;
+    var DT = 0.55, G = 9.81, V0 = 760;
+
+    function reset() {
+      var a = (+angleIn.value) * Math.PI / 180;
+      S = { x: 0, y: 0, vx: V0 * Math.cos(a), vy: V0 * Math.sin(a), t: 0, n: 0, done: false };
+      trail = [{ x: 0, y: 0 }];
+      hotRow = -1;
+      paint(); syncRegs();
+      out.textContent = "STEP 0";
+    }
+
+    function lookup(v) {
+      for (var i = 0; i < TABLE.length; i++) if (v >= TABLE[i].v) { hotRow = i; return TABLE[i].k; }
+      hotRow = TABLE.length - 1;
+      return TABLE[TABLE.length - 1].k;
+    }
+
+    function step() {
+      if (S.done) return;
+      var v = Math.sqrt(S.vx * S.vx + S.vy * S.vy);
+      var k = lookup(v);
+      var d = k * v;
+      S.vx += (-d * S.vx) * DT;
+      S.vy += (-G - d * S.vy) * DT;
+      S.x += S.vx * DT;
+      S.y += S.vy * DT;
+      S.t += DT;
+      S.n++;
+      if (S.y <= 0 && S.n > 1) { S.y = 0; S.done = true; }
+      trail.push({ x: S.x, y: S.y });
+      paint(); syncRegs();
+      out.textContent = "STEP " + S.n + (S.done ? " · IMPACT" : "");
+      if (S.done && timer) { clearInterval(timer); timer = null; runBtn.setAttribute("aria-pressed", "false"); }
+    }
+
+    function syncRegs() {
+      regNodes.x.val.textContent = Math.round(S.x) + " m";
+      regNodes.y.val.textContent = Math.round(S.y) + " m";
+      regNodes.vx.val.textContent = S.vx.toFixed(1);
+      regNodes.vy.val.textContent = S.vy.toFixed(1);
+      regNodes.t.val.textContent = S.t.toFixed(2) + " s";
+      Object.keys(regNodes).forEach(function (k) {
+        regNodes[k].row.classList.add("touched");
+      });
+      setTimeout(function () {
+        Object.keys(regNodes).forEach(function (k) { regNodes[k].row.classList.remove("touched"); });
+      }, reduced ? 1 : 180);
+      rows.forEach(function (r, i) { r.classList.toggle("hot", i === hotRow); });
+    }
+
+    function css(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function paint() {
+      var W = cv.width, H = cv.height;
+      ctx.clearRect(0, 0, W, H);
+
+      var pad = 42;
+      var maxX = 26000, maxY = 9000;
+
+      /* grid */
+      ctx.strokeStyle = css("--line-soft");
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (var gx = 0; gx <= 6; gx++) {
+        var px = pad + (W - pad * 2) * (gx / 6);
+        ctx.moveTo(px, pad * 0.4); ctx.lineTo(px, H - pad);
+      }
+      for (var gy = 0; gy <= 4; gy++) {
+        var py = H - pad - (H - pad * 1.4) * (gy / 4);
+        ctx.moveTo(pad, py); ctx.lineTo(W - pad, py);
+      }
+      ctx.stroke();
+
+      /* ground */
+      ctx.strokeStyle = css("--line");
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(pad, H - pad); ctx.lineTo(W - pad, H - pad);
+      ctx.stroke();
+
+      function toPx(p) {
+        return {
+          x: pad + (W - pad * 2) * Math.min(1, p.x / maxX),
+          y: H - pad - (H - pad * 1.4) * Math.min(1, p.y / maxY)
+        };
+      }
+
+      /* trail as discrete dots */
+      ctx.fillStyle = css("--data");
+      for (var i = 0; i < trail.length; i++) {
+        var p = toPx(trail[i]);
+        ctx.globalAlpha = 0.55;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3.2, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      /* current shell */
+      var c = toPx(trail[trail.length - 1]);
+      ctx.fillStyle = css("--lamp");
+      ctx.shadowColor = css("--lamp");
+      ctx.shadowBlur = 16;
+      ctx.beginPath(); ctx.arc(c.x, c.y, 6.5, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+
+      /* axis labels */
+      ctx.fillStyle = css("--ink-3");
+      ctx.font = "20px ui-monospace, Menlo, monospace";
+      ctx.fillText("0", pad, H - pad + 28);
+      ctx.fillText("26 km", W - pad - 62, H - pad + 28);
+      ctx.save();
+      ctx.translate(pad - 14, pad * 0.5 + 18);
+      ctx.fillText("9 km", 0, 0);
+      ctx.restore();
+    }
+
+    var runBtn = document.getElementById("ballRun");
+    document.getElementById("ballStep").onclick = step;
+    document.getElementById("ballReset").onclick = function () {
+      if (timer) { clearInterval(timer); timer = null; runBtn.setAttribute("aria-pressed", "false"); }
+      reset();
+    };
+    runBtn.onclick = function () {
+      if (timer) {
+        clearInterval(timer); timer = null;
+        runBtn.setAttribute("aria-pressed", "false");
+      } else {
+        if (S.done) reset();
+        timer = setInterval(step, reduced ? 60 : 90);
+        runBtn.setAttribute("aria-pressed", "true");
+      }
+    };
+    angleIn.oninput = function () {
+      angleOut.textContent = angleIn.value + "°";
+      if (timer) { clearInterval(timer); timer = null; runBtn.setAttribute("aria-pressed", "false"); }
+      reset();
+    };
+
+    reset();
+    window.addEventListener("resize", paint);
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    if (mq.addEventListener) mq.addEventListener("change", function () { setTimeout(paint, 60); });
+    new MutationObserver(function () { setTimeout(paint, 60); })
+      .observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  })();
+
+})();
+</script>

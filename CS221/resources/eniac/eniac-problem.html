@@ -1,0 +1,755 @@
+<title>โจทย์จริงบน ENIAC 20 หน่วย</title>
+
+<style>
+  :root {
+    --sans: "Noto Sans Thai", "IBM Plex Sans Thai", "Sarabun", "Thonburi", -apple-system, system-ui, "Segoe UI", sans-serif;
+    --mono: ui-monospace, "SF Mono", "Menlo", "Consolas", "Liberation Mono", monospace;
+
+    --bg: #EAE6DB;
+    --surface: #F5F1E7;
+    --well: #DFD9C9;
+    --line: #C6BEAB;
+    --line-soft: #D8D1C0;
+    --ink: #1F2427;
+    --ink-2: #565D62;
+    --ink-3: #878D91;
+    --data: #A9660A;
+    --ctrl: #0E6E85;
+    --lamp: #C93A15;
+    --lamp-off: #CAC1AC;
+    --lamp-glow: rgba(201, 58, 21, .28);
+    --human: #6B5E8A;
+    --shadow: 0 1px 0 rgba(0,0,0,.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171B1C; --surface: #23282A; --well: #14181A;
+      --line: #39403F; --line-soft: #2C3234;
+      --ink: #E9E5DA; --ink-2: #A0A7A5; --ink-3: #6B7372;
+      --data: #E8A33D; --ctrl: #52C4DC; --lamp: #FF5F2E;
+      --lamp-off: #382F2C; --lamp-glow: rgba(255,95,46,.42);
+      --human: #A99BD0;
+      --shadow: 0 1px 0 rgba(255,255,255,.03);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171B1C; --surface: #23282A; --well: #14181A;
+    --line: #39403F; --line-soft: #2C3234;
+    --ink: #E9E5DA; --ink-2: #A0A7A5; --ink-3: #6B7372;
+    --data: #E8A33D; --ctrl: #52C4DC; --lamp: #FF5F2E;
+    --lamp-off: #382F2C; --lamp-glow: rgba(255,95,46,.42);
+    --human: #A99BD0;
+    --shadow: 0 1px 0 rgba(255,255,255,.03);
+  }
+  :root[data-theme="light"] {
+    --bg: #EAE6DB; --surface: #F5F1E7; --well: #DFD9C9;
+    --line: #C6BEAB; --line-soft: #D8D1C0;
+    --ink: #1F2427; --ink-2: #565D62; --ink-3: #878D91;
+    --data: #A9660A; --ctrl: #0E6E85; --lamp: #C93A15;
+    --lamp-off: #CAC1AC; --lamp-glow: rgba(201,58,21,.28);
+    --human: #6B5E8A;
+    --shadow: 0 1px 0 rgba(0,0,0,.05);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 16px; line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px 90px; }
+
+  .masthead {
+    padding: 60px 0 34px; border-bottom: 1px solid var(--line);
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .22em;
+    text-transform: uppercase; color: var(--ink-3);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow .rule { flex: 1; height: 1px; background: var(--line); }
+
+  h1 {
+    margin: 0; font-size: clamp(28px, 5vw, 46px); line-height: 1.25;
+    font-weight: 700; letter-spacing: -.01em; text-wrap: balance;
+  }
+  .standfirst { margin: 0; max-width: 60ch; color: var(--ink-2); font-size: 17px; }
+
+  .module { margin-top: 60px; display: flex; flex-direction: column; gap: 16px; }
+
+  .fignum {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--data);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .fignum .rule { flex: 1; height: 1px; background: var(--line-soft); }
+
+  h2 {
+    margin: 0; font-size: clamp(20px, 3vw, 26px); line-height: 1.4;
+    font-weight: 700; text-wrap: balance;
+  }
+  .lede { margin: 0; max-width: 65ch; color: var(--ink-2); }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .panel {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 3px; box-shadow: var(--shadow); overflow: hidden;
+  }
+  .panel-head {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 14px; padding: 11px 16px; border-bottom: 1px solid var(--line-soft);
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-3); flex-wrap: wrap;
+  }
+  .panel-body { padding: 20px 16px; }
+  .panel-body.well { background: var(--well); }
+
+  .controls {
+    display: flex; gap: 9px; align-items: center; flex-wrap: wrap;
+    padding: 13px 16px; border-top: 1px solid var(--line-soft);
+  }
+  .spacer { flex: 1; min-width: 4px; }
+
+  button {
+    font-family: var(--sans); font-size: 13.5px;
+    color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 2px;
+    padding: 8px 14px; cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  button:hover { border-color: var(--data); color: var(--data); }
+  button:focus-visible { outline: 2px solid var(--ctrl); outline-offset: 2px; }
+  button:disabled { opacity: .35; cursor: default; }
+  button:disabled:hover { border-color: var(--line); color: var(--ink); }
+  button[aria-pressed="true"] { background: var(--data); border-color: var(--data); color: var(--surface); }
+
+  .caption { margin: 0; max-width: 68ch; font-size: 14.5px; color: var(--ink-3); line-height: 1.7; }
+  .caption strong { color: var(--ink-2); font-weight: 600; }
+
+  table { border-collapse: collapse; width: 100%; }
+  .scroller { overflow-x: auto; }
+
+  .dtable td, .dtable th {
+    font-size: 13.5px; padding: 7px 12px; text-align: left;
+    border-bottom: 1px solid var(--line-soft); white-space: nowrap;
+  }
+  .dtable th {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 400;
+  }
+  .dtable td.num {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    text-align: right; color: var(--ink);
+  }
+  .dtable td.machine {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    text-align: right; color: var(--lamp); letter-spacing: .04em;
+  }
+  .dtable tr:last-child td { border-bottom: 0; }
+
+  /* ---- accumulator grid ---- */
+  .accgrid {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .acc {
+    border: 1px solid var(--line); border-radius: 2px;
+    background: var(--surface); padding: 8px 9px 9px;
+    display: flex; flex-direction: column; gap: 3px; min-height: 88px;
+    transition: border-color .18s, box-shadow .18s, opacity .18s;
+  }
+  .acc.idle { opacity: .34; }
+  .acc.src { border-color: var(--data); box-shadow: inset 0 0 0 1px var(--data); }
+  .acc.dst { border-color: var(--lamp); box-shadow: 0 0 14px var(--lamp-glow); }
+  .acc-id {
+    font-family: var(--mono); font-size: 9px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .acc-role { font-size: 12px; line-height: 1.35; color: var(--ink-2); }
+  .acc-sym {
+    font-family: var(--mono); font-size: 11px; color: var(--ctrl); letter-spacing: .06em;
+  }
+  .acc-val {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 14px; color: var(--lamp); margin-top: auto; letter-spacing: .02em;
+  }
+  .acc.idle .acc-val { color: var(--ink-3); }
+
+  /* ---- trace ---- */
+  .traceline {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    padding: 12px 14px; border: 1px solid var(--line);
+    border-radius: 2px; background: var(--surface);
+  }
+  .trace-idx {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+    color: var(--ink-3); text-transform: uppercase;
+  }
+  .trace-eq {
+    font-family: var(--mono); font-size: 15px; color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .trace-note { font-size: 13.5px; color: var(--ink-2); }
+  .kindtag {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em;
+    text-transform: uppercase; padding: 2px 7px; border-radius: 2px;
+    border: 1px solid var(--line); color: var(--ink-3);
+  }
+  .kindtag.mult { border-color: var(--data); color: var(--data); }
+  .kindtag.sqrt { border-color: var(--lamp); color: var(--lamp); }
+  .kindtag.table { border-color: var(--ctrl); color: var(--ctrl); }
+
+  /* ---- clocks ---- */
+  .clocks { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  .clock {
+    border: 1px solid var(--line); border-radius: 2px;
+    background: var(--surface); padding: 13px 15px;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .clock-name {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .clock-val {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: clamp(20px, 4vw, 28px); line-height: 1.1;
+  }
+  .clock.machine .clock-val { color: var(--lamp); }
+  .clock.human .clock-val { color: var(--human); }
+  .clock-sub { font-size: 12.5px; color: var(--ink-3); }
+  .bar { height: 5px; border-radius: 3px; background: var(--lamp-off); overflow: hidden; margin-top: 4px; }
+  .bar i { display: block; height: 100%; width: 0; transition: width .2s linear; }
+  .clock.machine .bar i { background: var(--lamp); }
+  .clock.human .bar i { background: var(--human); }
+
+  canvas { display: block; width: 100%; height: auto; border-radius: 2px; margin-top: 14px; }
+
+  .verdict {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .stat {
+    border: 1px solid var(--line); border-radius: 2px;
+    background: var(--surface); padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .stat-k {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .stat-v {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 21px; color: var(--ink);
+  }
+  .stat.hot .stat-v { color: var(--lamp); }
+
+  .closing {
+    margin-top: 66px; padding-top: 28px; border-top: 1px solid var(--line);
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .closing p { margin: 0; max-width: 65ch; color: var(--ink-2); }
+  .closing .q {
+    font-size: 19px; color: var(--ink); font-weight: 600;
+    max-width: 60ch; text-wrap: balance; line-height: 1.6;
+  }
+  blockquote {
+    margin: 0; padding: 0 0 0 16px; border-left: 2px solid var(--data);
+    color: var(--ink); font-size: 17px; max-width: 60ch; line-height: 1.65;
+  }
+
+  @media (max-width: 780px) {
+    .accgrid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .clocks { grid-template-columns: minmax(0,1fr); }
+  }
+  @media (max-width: 460px) {
+    .accgrid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: .001ms !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow"><span>Firing table problem</span><span class="rule"></span><span>1946</span></div>
+    <h1>โจทย์จริงหนึ่งข้อ บนหน่วยเก็บเลข 20 ตัว</h1>
+    <p class="standfirst">
+      ปืนใหญ่ 155 มม. ยิงที่มุม 45 องศา ความเร็วปากกระบอก 850 เมตรต่อวินาที
+      คำถามเดียว &mdash; กระสุนตกไกลเท่าไหร่ ลองเดินไปพร้อมกันทีละคำสั่ง แล้วดูนาฬิกาสองเรือนวิ่งแข่งกัน
+    </p>
+  </header>
+
+  <!-- ===== 1 : the problem on paper ===== -->
+  <section class="module">
+    <div class="fignum"><span>ขั้นที่ 1</span><span class="rule"></span><span>บนกระดาษ</span></div>
+    <h2>ก่อนแตะเครื่อง ต้องตัดสินใจว่าจุดทศนิยมอยู่ตรงไหน</h2>
+    <p class="lede">
+      ENIAC เก็บเลขได้ 10 หลัก และ<strong>ไม่รู้จักจุดทศนิยม</strong> สำหรับมันทุกอย่างคือจำนวนเต็ม
+      คนคุมต้องเลือกสเกลให้แต่ละปริมาณเอง ให้ค่ามันไม่ล้นสิบหลัก และไม่เล็กจนหล่นหายไปในหลักท้าย
+      ตารางนี้คือสิ่งที่ต้องจดไว้บนกระดาษข้างเครื่องตลอดเวลา เพราะเครื่องจำให้ไม่ได้
+    </p>
+
+    <div class="panel">
+      <div class="panel-head"><span>Scaling sheet</span><span>10 digits &middot; fixed point</span></div>
+      <div class="panel-body scroller">
+        <table class="dtable">
+          <thead>
+            <tr><th>ปริมาณ</th><th>ค่าจริง</th><th>สเกล</th><th>สิ่งที่เครื่องเห็น</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ระยะทาง X</td><td class="num">0.0 m</td><td class="num">&times;10&#8309;</td><td class="machine">0000000000</td></tr>
+            <tr><td>ความสูง Y</td><td class="num">0.0 m</td><td class="num">&times;10&#8309;</td><td class="machine">0000000000</td></tr>
+            <tr><td>ความเร็วแนวราบ VX</td><td class="num">601.04 m/s</td><td class="num">&times;10&#8311;</td><td class="machine">6010400000</td></tr>
+            <tr><td>ความเร็วแนวดิ่ง VY</td><td class="num">601.04 m/s</td><td class="num">&times;10&#8311;</td><td class="machine">6010400000</td></tr>
+            <tr><td>ก้าวเวลา &Delta;t</td><td class="num">0.20 s</td><td class="num">&times;10&#185;&#8304;</td><td class="machine">2000000000</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="caption">
+      ดูแถว VX กับ &Delta;t ให้ดี ตัวเลขในเครื่องขึ้นต้นด้วย 6 กับ 2 เหมือนกัน
+      <strong>เครื่องไม่มีทางรู้เลยว่าตัวหนึ่งคือหกร้อยกว่า อีกตัวคือศูนย์จุดสอง</strong>
+      สเกลผิดเมื่อไหร่ เครื่องจะให้คำตอบหน้าตาปกติที่ผิดสนิท และไม่มีอะไรเตือน
+    </p>
+  </section>
+
+  <!-- ===== 2 : accumulator map + trace ===== -->
+  <section class="module">
+    <div class="fignum"><span>ขั้นที่ 2</span><span class="rule"></span><span>บนแผงเครื่อง</span></div>
+    <h2>โจทย์นี้กินหน่วยเก็บเลข 13 ตัว จาก 20 ตัวที่มี</h2>
+    <p class="lede">
+      ห้าตัวแรกคือสถานะของกระสุน ณ ขณะนี้ สองตัวถัดมาคือค่าคงที่ ที่เหลือคือที่พักค่ากลางระหว่างคำนวณ
+      กด <strong>เดินทีละคำสั่ง</strong> แล้วดูว่าหน่วยไหนถูกอ่าน หน่วยไหนถูกเขียน
+      หนึ่งรอบลูปคือ 18 คำสั่ง และหนึ่งรอบลูปพากระสุนเดินหน้าไปแค่ 0.2 วินาที
+    </p>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span>Accumulator panel &mdash; 20 units</span>
+        <span id="stepReadout" style="font-variant-numeric:tabular-nums">LOOP 0 &middot; OP 0/18</span>
+      </div>
+
+      <div class="panel-body well">
+        <div class="accgrid" id="accgrid"></div>
+
+        <div style="margin-top:14px" class="traceline" id="traceline">
+          <span class="trace-idx" id="traceIdx">พร้อม</span>
+          <span class="kindtag" id="traceKind">idle</span>
+          <span class="trace-eq" id="traceEq">&mdash;</span>
+          <span class="trace-note" id="traceNote">กดปุ่มด้านล่างเพื่อเริ่ม</span>
+        </div>
+
+        <div class="clocks" style="margin-top:14px">
+          <div class="clock machine">
+            <span class="clock-name">ENIAC</span>
+            <span class="clock-val" id="clkMachine">0 ms</span>
+            <span class="clock-sub" id="subMachine">&mdash;</span>
+            <span class="bar"><i id="barMachine"></i></span>
+          </div>
+          <div class="clock human">
+            <span class="clock-name">คน + เครื่องคิดเลขมือหมุน</span>
+            <span class="clock-val" id="clkHuman">0 วินาที</span>
+            <span class="clock-sub" id="subHuman">&mdash;</span>
+            <span class="bar"><i id="barHuman"></i></span>
+          </div>
+        </div>
+
+        <canvas id="arc" width="1100" height="300"></canvas>
+      </div>
+
+      <div class="controls">
+        <button id="btnOp">เดินทีละคำสั่ง</button>
+        <button id="btnLoop">เดินครบ 1 รอบ</button>
+        <button id="btnRun" aria-pressed="false">รันจนกระสุนตก</button>
+        <button id="btnReset">รีเซ็ต</button>
+        <span class="spacer"></span>
+        <span style="font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)"
+              id="flightOut">FLIGHT 0.0 s</span>
+      </div>
+    </div>
+
+    <p class="caption">
+      สังเกตคำสั่งที่ 4 คือถอดรากที่สอง มันกินเวลาของเครื่องมากกว่าการบวกร้อยกว่าเท่า
+      <strong>หารกับถอดรากคือคอขวดของ ENIAC</strong> คนเขียนโปรแกรมสมัยนั้นจึงพยายามจัดรูปสมการใหม่เพื่อเลี่ยงมันทุกทาง
+      &mdash; เป็นการ optimize ที่เกิดขึ้นก่อนคำว่า optimize จะมีความหมายแบบทุกวันนี้
+    </p>
+  </section>
+
+  <!-- ===== 3 : why faster ===== -->
+  <section class="module">
+    <div class="fignum"><span>ขั้นที่ 3</span><span class="rule"></span><span>ทำไมถึงเร็วกว่า</span></div>
+    <h2>คนไม่ได้ช้าเพราะคิดเลขช้า แต่ช้าเพราะต้องขนตัวเลข</h2>
+
+    <div class="panel">
+      <div class="panel-head"><span>Per-operation cost</span><span>ต่อหนึ่งคำสั่ง</span></div>
+      <div class="panel-body scroller">
+        <table class="dtable">
+          <thead>
+            <tr><th>คำสั่ง</th><th>ENIAC</th><th>คน</th><th>เร็วกว่า</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>บวก / ลบ</td><td class="num">0.2 ms</td><td class="num">4 วินาที</td><td class="machine">20,000&times;</td></tr>
+            <tr><td>คูณ</td><td class="num">2.6 ms</td><td class="num">20 วินาที</td><td class="machine">7,700&times;</td></tr>
+            <tr><td>เปิดตารางแรงต้าน</td><td class="num">1.0 ms</td><td class="num">12 วินาที</td><td class="machine">12,000&times;</td></tr>
+            <tr><td>ถอดรากที่สอง</td><td class="num">25 ms</td><td class="num">90 วินาที</td><td class="machine">3,600&times;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="lede">
+      ตัวเลขฝั่งคนไม่ได้ช้าเพราะสมองช้า ลองแยกดูว่าสี่วินาทีของการบวกหนึ่งครั้งหมดไปกับอะไรบ้าง
+      &mdash; หาแถวในแบบฟอร์ม อ่านเลขสิบหลัก หมุนป้อนเข้าเครื่อง อ่านผลจากหน้าปัด เขียนลงช่องใหม่
+      <strong>การคิดเลขจริง ๆ ใช้เวลาแค่เศษเสี้ยวเดียว ที่เหลือคือการขนตัวเลขไปมาระหว่างกระดาษกับเครื่อง</strong>
+    </p>
+
+    <blockquote>
+      ENIAC ไม่ได้เก่งเลขกว่ามนุษย์ มันแค่ไม่ต้องเขียนอะไรลงกระดาษเลยสักครั้ง
+      ตัวเลขวิ่งจากหน่วยหนึ่งไปอีกหน่วยเป็นพัลส์ แล้วอยู่ในเครื่องตลอดทั้งการคำนวณ
+    </blockquote>
+
+    <div class="verdict" id="verdict"></div>
+
+    <p class="caption">
+      ตัวเลขในกล่องด้านบนคำนวณสดจากการรันจริงข้างบน ไม่ได้พิมพ์ตายไว้
+      ตัวเลขที่มักอ้างกันคือหนึ่งวิถีใช้คนราว 20 ชั่วโมง และใช้ ENIAC ราว 30 วินาที
+      ส่วนต่างระหว่างเวลาคำนวณล้วนกับ 30 วินาทีนั้น หมดไปกับการอ่านบัตรเจาะรูเข้าและเจาะผลออก
+      &mdash; <strong>แม้แต่ในปี 1946 การขนข้อมูลเข้าออกก็ช้ากว่าการคำนวณแล้ว</strong>
+    </p>
+  </section>
+
+  <div class="closing">
+    <p class="q">
+      แล้วถ้าการขนตัวเลขคือตัวการที่ทำให้ช้า &mdash; ทำไมเราถึงยอมออกแบบเครื่องที่ต้องขนคำสั่งกับข้อมูล
+      ผ่านทางเดินเส้นเดียวกันไปอีกเจ็ดสิบปี
+    </p>
+    <p>นั่นคือ von Neumann bottleneck และเป็นเรื่องของอีกหลายบทข้างหน้า</p>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function $(id) { return document.getElementById(id); }
+  function el(t, c) { var n = document.createElement(t); if (c) n.className = c; return n; }
+
+  /* ---------------- accumulator definitions ---------------- */
+
+  var ACCS = [
+    { n: 1,  key: "x",  sym: "X",   role: "ระยะทาง" },
+    { n: 2,  key: "y",  sym: "Y",   role: "ความสูง" },
+    { n: 3,  key: "vx", sym: "VX",  role: "ความเร็วแนวราบ" },
+    { n: 4,  key: "vy", sym: "VY",  role: "ความเร็วแนวดิ่ง" },
+    { n: 5,  key: "t",  sym: "T",   role: "เวลาบิน" },
+    { n: 6,  key: "dt", sym: "Δt",  role: "ค่าคงที่ ก้าวเวลา" },
+    { n: 7,  key: "gdt",sym: "g·Δt",role: "ค่าคงที่ แรงโน้มถ่วง" },
+    { n: 8,  key: "s1", sym: "S1",  role: "ที่พักค่ากลาง" },
+    { n: 9,  key: "s2", sym: "S2",  role: "ที่พักค่ากลาง" },
+    { n: 10, key: "v2", sym: "V²",  role: "ความเร็วยกกำลังสอง" },
+    { n: 11, key: "v",  sym: "V",   role: "ความเร็วรวม" },
+    { n: 12, key: "k",  sym: "K",   role: "ค่าจากตารางแรงต้าน" },
+    { n: 13, key: "d",  sym: "D",   role: "พจน์หน่วง" },
+    { n: 14, key: null, sym: "",    role: "ว่าง" },
+    { n: 15, key: null, sym: "",    role: "ว่าง" },
+    { n: 16, key: null, sym: "",    role: "ว่าง" },
+    { n: 17, key: null, sym: "",    role: "ว่าง" },
+    { n: 18, key: null, sym: "",    role: "ว่าง" },
+    { n: 19, key: "n",  sym: "N",   role: "ตัวนับรอบ" },
+    { n: 20, key: null, sym: "",    role: "ว่าง" }
+  ];
+
+  var byKey = {};
+  ACCS.forEach(function (a) { if (a.key) byKey[a.key] = a; });
+
+  /* ---------------- timing model ---------------- */
+
+  var COST = {
+    add:   { m: 0.2,  h: 4   },
+    mult:  { m: 2.6,  h: 20  },
+    table: { m: 1.0,  h: 12  },
+    sqrt:  { m: 25.0, h: 90  },
+    branch:{ m: 0.2,  h: 3   }
+  };
+
+  /* ---------------- drag table ---------------- */
+
+  var TABLE = [
+    { v: 700, k: 0.00060 }, { v: 600, k: 0.00074 }, { v: 500, k: 0.00090 },
+    { v: 400, k: 0.00078 }, { v: 300, k: 0.00056 }, { v: 200, k: 0.00040 },
+    { v: 100, k: 0.00028 }, { v: 0,   k: 0.00022 }
+  ];
+  function lookupK(v) {
+    for (var i = 0; i < TABLE.length; i++) if (v >= TABLE[i].v) return TABLE[i].k;
+    return TABLE[TABLE.length - 1].k;
+  }
+
+  /* ---------------- the 18-op loop body ---------------- */
+
+  var OPS = [
+    { kind: "mult",  src: ["vx","vx"], dst: "s1", eq: "S1 ← VX × VX",
+      note: "หาความเร็วแนวราบยกกำลังสอง", run: function (S) { S.s1 = S.vx * S.vx; } },
+    { kind: "mult",  src: ["vy","vy"], dst: "s2", eq: "S2 ← VY × VY",
+      note: "หาความเร็วแนวดิ่งยกกำลังสอง", run: function (S) { S.s2 = S.vy * S.vy; } },
+    { kind: "add",   src: ["s1","s2"], dst: "v2", eq: "V² ← S1 + S2",
+      note: "รวมเป็นความเร็วรวมยกกำลังสอง", run: function (S) { S.v2 = S.s1 + S.s2; } },
+    { kind: "sqrt",  src: ["v2"], dst: "v", eq: "V ← √V²",
+      note: "คำสั่งที่แพงที่สุดในลูปนี้", run: function (S) { S.v = Math.sqrt(S.v2); } },
+    { kind: "table", src: ["v"], dst: "k", eq: "K ← ตาราง(V)",
+      note: "เปิดค่าแรงต้านที่คนหมุนสวิตช์ใส่ไว้", run: function (S) { S.k = lookupK(S.v); } },
+    { kind: "mult",  src: ["k","v"], dst: "d", eq: "D ← K × V",
+      note: "ได้พจน์หน่วงที่ขึ้นกับความเร็ว", run: function (S) { S.d = S.k * S.v; } },
+    { kind: "mult",  src: ["d","dt"], dst: "d", eq: "D ← D × Δt",
+      note: "คูณก้าวเวลาเข้าไปครั้งเดียวจบ", run: function (S) { S.d = S.d * S.dt; } },
+    { kind: "mult",  src: ["vx","d"], dst: "s1", eq: "S1 ← VX × D",
+      note: "ความเร็วแนวราบที่จะหายไป", run: function (S) { S.s1 = S.vx * S.d; } },
+    { kind: "add",   src: ["vx","s1"], dst: "vx", eq: "VX ← VX − S1",
+      note: "ลบด้วยการบวกค่าคู่เติมสิบ", run: function (S) { S.vx = S.vx - S.s1; } },
+    { kind: "mult",  src: ["vy","d"], dst: "s2", eq: "S2 ← VY × D",
+      note: "ความเร็วแนวดิ่งที่จะหายไป", run: function (S) { S.s2 = S.vy * S.d; } },
+    { kind: "add",   src: ["vy","s2"], dst: "vy", eq: "VY ← VY − S2",
+      note: "หักแรงต้านออกจากแนวดิ่ง", run: function (S) { S.vy = S.vy - S.s2; } },
+    { kind: "add",   src: ["vy","gdt"], dst: "vy", eq: "VY ← VY − g·Δt",
+      note: "แรงโน้มถ่วง ค่าคงที่ตัวเดียวใช้ได้ทั้งวิถี", run: function (S) { S.vy = S.vy - S.gdt; } },
+    { kind: "mult",  src: ["vx","dt"], dst: "s1", eq: "S1 ← VX × Δt",
+      note: "ระยะที่เดินได้ในก้าวนี้", run: function (S) { S.s1 = S.vx * S.dt; } },
+    { kind: "add",   src: ["x","s1"], dst: "x", eq: "X ← X + S1",
+      note: "ขยับตำแหน่งแนวราบ", run: function (S) { S.x = S.x + S.s1; } },
+    { kind: "mult",  src: ["vy","dt"], dst: "s2", eq: "S2 ← VY × Δt",
+      note: "ความสูงที่เปลี่ยนในก้าวนี้", run: function (S) { S.s2 = S.vy * S.dt; } },
+    { kind: "add",   src: ["y","s2"], dst: "y", eq: "Y ← Y + S2",
+      note: "ขยับความสูง", run: function (S) { S.y = S.y + S.s2; } },
+    { kind: "add",   src: ["t","dt"], dst: "t", eq: "T ← T + Δt",
+      note: "เดินนาฬิกาของกระสุนไปอีกก้าว", run: function (S) { S.t = S.t + S.dt; } },
+    { kind: "branch",src: ["y"], dst: "n", eq: "ถ้า Y ≥ 0 → วนกลับ",
+      note: "ใช้หลักเครื่องหมายเป็นตัวเบนพัลส์คำสั่ง", run: function (S) { S.n = S.n + 1; } }
+  ];
+
+  /* ---------------- state ---------------- */
+
+  var S, opIdx, done, mTime, hTime, trail, timer = null;
+
+  function reset() {
+    var a = 45 * Math.PI / 180, v0 = 850;
+    S = {
+      x: 0, y: 0, vx: v0 * Math.cos(a), vy: v0 * Math.sin(a), t: 0,
+      dt: 0.2, gdt: 9.81 * 0.2,
+      s1: 0, s2: 0, v2: 0, v: 0, k: 0, d: 0, n: 0
+    };
+    opIdx = 0; done = false; mTime = 0; hTime = 0;
+    trail = [{ x: 0, y: 0 }];
+    render(null, null);
+    $("btnRun").setAttribute("aria-pressed", "false");
+    if (timer) { clearInterval(timer); timer = null; }
+    setTrace(null);
+  }
+
+  function stepOp() {
+    if (done) return;
+    var op = OPS[opIdx];
+    op.run(S);
+    mTime += COST[op.kind].m;
+    hTime += COST[op.kind].h;
+
+    if (opIdx === OPS.length - 1) {
+      trail.push({ x: S.x, y: S.y });
+      if (S.y <= 0 && S.n > 1) { S.y = 0; done = true; }
+      opIdx = 0;
+    } else {
+      opIdx++;
+    }
+
+    setTrace(op);
+    render(op.src, op.dst);
+
+    if (done && timer) {
+      clearInterval(timer); timer = null;
+      $("btnRun").setAttribute("aria-pressed", "false");
+    }
+  }
+
+  function stepLoop() { for (var i = 0; i < OPS.length && !done; i++) stepOp(); }
+
+  /* ---------------- rendering ---------------- */
+
+  var cells = {};
+  (function buildGrid() {
+    var host = $("accgrid");
+    ACCS.forEach(function (a) {
+      var c = el("div", "acc");
+      var id = el("span", "acc-id"); id.textContent = "ACC. " + a.n;
+      var sym = el("span", "acc-sym"); sym.textContent = a.sym || "—";
+      var role = el("span", "acc-role"); role.textContent = a.role;
+      var val = el("span", "acc-val"); val.textContent = a.key ? "0" : "—";
+      c.appendChild(id); c.appendChild(sym); c.appendChild(role); c.appendChild(val);
+      if (!a.key) c.classList.add("idle");
+      host.appendChild(c);
+      cells[a.n] = { node: c, val: val, def: a };
+    });
+  })();
+
+  function fmt(key, v) {
+    if (key === "k") return v.toFixed(5);
+    if (key === "n") return String(Math.round(v));
+    if (key === "v2") return Math.round(v).toLocaleString("en-US");
+    if (Math.abs(v) >= 1000) return Math.round(v).toLocaleString("en-US");
+    return v.toFixed(2);
+  }
+
+  function render(srcKeys, dstKey) {
+    ACCS.forEach(function (a) {
+      var c = cells[a.n];
+      c.node.classList.remove("src", "dst");
+      if (!a.key) return;
+      c.val.textContent = fmt(a.key, S[a.key]);
+      if (srcKeys && srcKeys.indexOf(a.key) !== -1) c.node.classList.add("src");
+      if (dstKey === a.key) c.node.classList.add("dst");
+    });
+
+    $("stepReadout").textContent = "LOOP " + S.n + " · OP " + (opIdx === 0 && S.n > 0 ? OPS.length : opIdx) + "/" + OPS.length;
+    $("flightOut").textContent = "FLIGHT " + S.t.toFixed(1) + " s";
+
+    $("clkMachine").textContent = mTime < 1000
+      ? mTime.toFixed(1) + " ms"
+      : (mTime / 1000).toFixed(2) + " วินาที";
+    $("subMachine").textContent = "คำสั่งที่ทำไปแล้ว " + (S.n * OPS.length + opIdx).toLocaleString("en-US");
+
+    $("clkHuman").textContent = humanTime(hTime);
+    $("subHuman").textContent = "กระดาษที่ต้องจด " + ((S.n * OPS.length + opIdx) * 2).toLocaleString("en-US") + " ตัวเลข";
+
+    var maxRef = Math.max(hTime, 1);
+    $("barHuman").style.width = "100%";
+    $("barMachine").style.width = Math.max(0.4, (mTime / 1000) / maxRef * 100) + "%";
+
+    paintArc();
+    paintVerdict();
+  }
+
+  function humanTime(s) {
+    if (s < 60) return Math.round(s) + " วินาที";
+    if (s < 3600) return Math.floor(s / 60) + " นาที " + Math.round(s % 60) + " วิ";
+    var h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60);
+    return h + " ชั่วโมง " + m + " นาที";
+  }
+
+  function setTrace(op) {
+    if (!op) {
+      $("traceIdx").textContent = "พร้อม";
+      $("traceKind").textContent = "idle";
+      $("traceKind").className = "kindtag";
+      $("traceEq").textContent = "—";
+      $("traceNote").textContent = "กดปุ่มด้านล่างเพื่อเริ่ม";
+      return;
+    }
+    var i = OPS.indexOf(op) + 1;
+    $("traceIdx").textContent = "คำสั่งที่ " + i + " / " + OPS.length;
+    $("traceKind").textContent = op.kind;
+    $("traceKind").className = "kindtag " + op.kind;
+    $("traceEq").textContent = op.eq;
+    $("traceNote").textContent = op.note + " · " + COST[op.kind].m + " ms";
+  }
+
+  /* ---------------- arc ---------------- */
+
+  var cv = $("arc"), ctx = cv.getContext("2d");
+  function cssv(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+  function paintArc() {
+    var W = cv.width, H = cv.height, pad = 34;
+    ctx.clearRect(0, 0, W, H);
+
+    var maxX = 24000, maxY = 8000;
+    ctx.strokeStyle = cssv("--line-soft"); ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (var g = 0; g <= 6; g++) {
+      var px = pad + (W - pad * 2) * (g / 6);
+      ctx.moveTo(px, 10); ctx.lineTo(px, H - pad);
+    }
+    ctx.stroke();
+
+    ctx.strokeStyle = cssv("--line"); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(pad, H - pad); ctx.lineTo(W - pad, H - pad); ctx.stroke();
+
+    function P(p) {
+      return {
+        x: pad + (W - pad * 2) * Math.min(1, p.x / maxX),
+        y: H - pad - (H - pad - 16) * Math.min(1, p.y / maxY)
+      };
+    }
+
+    ctx.fillStyle = cssv("--data"); ctx.globalAlpha = .6;
+    for (var i = 0; i < trail.length; i++) {
+      var p = P(trail[i]);
+      ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    var c = P(trail[trail.length - 1]);
+    ctx.fillStyle = cssv("--lamp");
+    ctx.shadowColor = cssv("--lamp"); ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(c.x, c.y, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = cssv("--ink-3");
+    ctx.font = "19px ui-monospace, Menlo, monospace";
+    ctx.fillText("0", pad, H - pad + 24);
+    ctx.fillText("24 km", W - pad - 60, H - pad + 24);
+  }
+
+  /* ---------------- verdict ---------------- */
+
+  function paintVerdict() {
+    var host = $("verdict");
+    var ops = S.n * OPS.length + opIdx;
+    var ratio = mTime > 0 ? (hTime / (mTime / 1000)) : 0;
+    var items = [
+      { k: "รอบลูปที่ทำไป", v: S.n.toLocaleString("en-US") },
+      { k: "คำสั่งทั้งหมด", v: ops.toLocaleString("en-US") },
+      { k: "ระยะที่ตกได้", v: Math.round(S.x).toLocaleString("en-US") + " m" },
+      { k: "ENIAC ใช้เวลา", v: (mTime / 1000).toFixed(1) + " s" },
+      { k: "คนใช้เวลา", v: humanTime(hTime) },
+      { k: "เร็วกว่า", v: ratio > 0 ? Math.round(ratio).toLocaleString("en-US") + "×" : "—", hot: true }
+    ];
+    host.innerHTML = "";
+    items.forEach(function (it) {
+      var d = el("div", "stat" + (it.hot ? " hot" : ""));
+      var k = el("span", "stat-k"); k.textContent = it.k;
+      var v = el("span", "stat-v"); v.textContent = it.v;
+      d.appendChild(k); d.appendChild(v); host.appendChild(d);
+    });
+  }
+
+  /* ---------------- controls ---------------- */
+
+  $("btnOp").onclick = stepOp;
+  $("btnLoop").onclick = stepLoop;
+  $("btnReset").onclick = reset;
+  $("btnRun").onclick = function () {
+    var b = $("btnRun");
+    if (timer) {
+      clearInterval(timer); timer = null;
+      b.setAttribute("aria-pressed", "false");
+    } else {
+      if (done) reset();
+      timer = setInterval(stepLoop, reduced ? 30 : 55);
+      b.setAttribute("aria-pressed", "true");
+    }
+  };
+
+  var mq = window.matchMedia("(prefers-color-scheme: dark)");
+  if (mq.addEventListener) mq.addEventListener("change", function () { setTimeout(paintArc, 60); });
+  new MutationObserver(function () { setTimeout(paintArc, 60); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  window.addEventListener("resize", paintArc);
+
+  reset();
+})();
+</script>
